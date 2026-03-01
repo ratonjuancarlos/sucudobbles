@@ -186,9 +186,10 @@ export function processGuess(
 
   const correct = faceIndex === state.round.matchingFaceIndex;
 
+  const scoreChange = correct ? 1 : 0;
   const newPlayers = state.players.map((p) => {
     if (p.id !== playerId) return p;
-    return { ...p, score: p.score + (correct ? 1 : -1) };
+    return { ...p, score: p.score + scoreChange };
   });
 
   let newState: GameState = { ...state, players: newPlayers };
