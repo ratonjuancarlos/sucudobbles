@@ -30,6 +30,7 @@ function SetupContent() {
   const [timerSeconds, setTimerSeconds] = useState<number | null>(null);
   const [drunkMode, setDrunkMode] = useState(false);
   const [gameMode, setGameMode] = useState<'same_screen' | 'online'>('same_screen');
+  const [turnStyle, setTurnStyle] = useState<'turns' | 'race'>('race');
   const [hostName, setHostName] = useState('');
   const [loading, setLoading] = useState(true);
   const [step, setStep] = useState<'config' | 'players'>('config');
@@ -64,6 +65,7 @@ function SetupContent() {
       players,
       totalRounds,
       mode: 'same_screen' as const,
+      turnStyle,
       timerSeconds,
       drunkMode,
     };
@@ -142,6 +144,39 @@ function SetupContent() {
                   </button>
                 </div>
               </div>
+
+              {/* Turn style (same_screen only) */}
+              {gameMode === 'same_screen' && (
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2 uppercase tracking-wide">
+                    Estilo de juego
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setTurnStyle('race')}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        turnStyle === 'race'
+                          ? 'bg-indigo-50 text-indigo-700 border-indigo-300 shadow-sm'
+                          : 'bg-white border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="font-bold text-sm">Todos compiten</div>
+                      <div className="text-[11px] opacity-60 font-semibold">El primero que toca se arriesga</div>
+                    </button>
+                    <button
+                      onClick={() => setTurnStyle('turns')}
+                      className={`p-3 rounded-xl border text-left transition-all ${
+                        turnStyle === 'turns'
+                          ? 'bg-indigo-50 text-indigo-700 border-indigo-300 shadow-sm'
+                          : 'bg-white border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="font-bold text-sm">Por turnos</div>
+                      <div className="text-[11px] opacity-60 font-semibold">El juego asigna el turno</div>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Deck selection */}
               <div>

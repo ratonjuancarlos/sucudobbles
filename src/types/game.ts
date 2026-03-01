@@ -1,5 +1,6 @@
 export type GameStatus = 'lobby' | 'playing' | 'paused' | 'finished';
 export type GameMode = 'same_screen' | 'online';
+export type TurnStyle = 'turns' | 'race';
 
 export interface PlayerState {
   id: string;
@@ -44,6 +45,7 @@ export interface GameState {
   round: RoundState | null;
   status: GameStatus;
   mode: GameMode;
+  turnStyle: TurnStyle;
   timerSeconds: number | null;
   drunkMode: boolean;
   usedCardPairs: [number, number][];

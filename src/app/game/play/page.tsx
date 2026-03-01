@@ -43,7 +43,8 @@ export default function PlayPage() {
             config.totalRounds,
             config.mode,
             config.timerSeconds ?? null,
-            config.drunkMode ?? false
+            config.drunkMode ?? false,
+            config.turnStyle ?? 'turns'
           );
 
           const started = startGame(state);

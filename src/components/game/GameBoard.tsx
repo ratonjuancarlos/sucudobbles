@@ -19,13 +19,16 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
   const [state, setState] = useState(initialState);
   const [activePlayer, setActivePlayer] = useState(0);
   const [highlightFace, setHighlightFace] = useState<number | null>(null);
-  const [highlightColor, setHighlightColor] = useState<'green' | 'red' | null>(null);
+  const [highlightColor, setHighlightColor] = useState<'green' | 'red' | 'blue' | null>(null);
   const [disabled, setDisabled] = useState(false);
-  const [claimingPlayer, setClaimingPlayer] = useState<string | null>(null);
+  const [selectedFace, setSelectedFace] = useState<number | null>(null); // race mode: face tapped before claiming
   const [feedback, setFeedback] = useState<string | null>(null);
   const [animatingScorePlayer, setAnimatingScorePlayer] = useState<string | null>(null);
   const [roundKey, setRoundKey] = useState(0);
   const [showQuitConfirm, setShowQuitConfirm] = useState(false);
+
+  const isRaceMode = state.mode === 'same_screen' && state.turnStyle === 'race';
+  const isTurnsMode = state.mode === 'same_screen' && state.turnStyle === 'turns';
 
   const sound = useSound();
   const prevSecondsRef = useRef<number | null>(null);
@@ -44,6 +47,9 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
     if (state.round) {
       timer.reset(state.timerSeconds);
       setRoundKey((k) => k + 1);
+      setSelectedFace(null);
+      setHighlightFace(null);
+      setHighlightColor(null);
       sound.play('round-start');
     }
   }, [state.round?.roundNumber]);
@@ -65,16 +71,61 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
     }
   }, [state.status, state, onGameEnd, sound]);
 
-  const handleClaim = useCallback((playerId: string) => {
-    setClaimingPlayer(playerId);
-  }, []);
+  // Race mode: player claims after tapping a face
+  const handleRaceClaim = useCallback((playerId: string) => {
+    if (selectedFace === null || disabled || !state.round) return;
+
+    const playerName = state.players.find((p) => p.id === playerId)?.name || '';
+    setDisabled(true);
+
+    const { correct, newState } = processGuess(state, playerId, selectedFace);
+
+    if (correct) {
+      sound.play('correct');
+      setHighlightColor('green');
+      setFeedback(`${playerName} +1!`);
+      setAnimatingScorePlayer(playerId);
+      setTimeout(() => {
+        setState(newState);
+        setHighlightFace(null);
+        setHighlightColor(null);
+        setDisabled(false);
+        setSelectedFace(null);
+        setFeedback(null);
+        setAnimatingScorePlayer(null);
+      }, 800);
+    } else {
+      sound.play('wrong');
+      setHighlightColor('red');
+      setFeedback(`${playerName} -1`);
+      setAnimatingScorePlayer(playerId);
+      setTimeout(() => {
+        setState(newState);
+        setHighlightFace(null);
+        setHighlightColor(null);
+        setDisabled(false);
+        setSelectedFace(null);
+        setFeedback(null);
+        setAnimatingScorePlayer(null);
+      }, 500);
+    }
+  }, [state, selectedFace, disabled, sound]);
 
   const handleFaceTap = useCallback(
     (faceIndex: number) => {
       if (disabled || !state.round) return;
 
-      const playerId = claimingPlayer || state.players[activePlayer].id;
-      const playerName = state.players.find((p) => p.id === playerId)?.name || '';
+      // Race mode: just select the face, wait for player claim
+      if (isRaceMode) {
+        setSelectedFace(faceIndex);
+        setHighlightFace(faceIndex);
+        setHighlightColor(null); // neutral highlight
+        return;
+      }
+
+      // Turns mode: process immediately for the active player
+      const playerId = state.players[activePlayer].id;
+      const playerName = state.players[activePlayer].name;
 
       setDisabled(true);
       setHighlightFace(faceIndex);
@@ -91,30 +142,25 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
           setHighlightFace(null);
           setHighlightColor(null);
           setDisabled(false);
-          setClaimingPlayer(null);
           setFeedback(null);
           setAnimatingScorePlayer(null);
-          if (!claimingPlayer) {
-            setActivePlayer((prev) => (prev + 1) % state.players.length);
-          }
+          setActivePlayer((prev) => (prev + 1) % state.players.length);
         }, 800);
       } else {
         sound.play('wrong');
         setHighlightColor('red');
-        setFeedback(`${playerName} -1`);
-        setAnimatingScorePlayer(playerId);
+        setFeedback(`${playerName} pierde turno`);
         setTimeout(() => {
           setState(newState);
           setHighlightFace(null);
           setHighlightColor(null);
           setDisabled(false);
-          setClaimingPlayer(null);
           setFeedback(null);
-          setAnimatingScorePlayer(null);
+          setActivePlayer((prev) => (prev + 1) % state.players.length);
         }, 500);
       }
     },
-    [state, disabled, activePlayer, claimingPlayer, sound]
+    [state, disabled, activePlayer, isRaceMode, sound]
   );
 
   const handleQuit = useCallback(() => {
@@ -127,10 +173,6 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
   }, [state, onQuit, onGameEnd]);
 
   if (!state.round) return null;
-
-  const claimingPlayerData = claimingPlayer
-    ? state.players.find((p) => p.id === claimingPlayer)
-    : null;
 
   return (
     <div className="flex flex-col gap-2 w-full max-w-lg mx-auto h-full">
@@ -193,28 +235,39 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
         </div>
       )}
 
-      {/* Player claim buttons */}
-      {state.mode === 'same_screen' && !claimingPlayer && !feedback && (
-        <div className="flex gap-2">
-          {state.players.map((player) => (
-            <button
-              key={player.id}
-              onClick={() => handleClaim(player.id)}
-              className="flex-1 py-3 text-white text-sm font-bold rounded-lg transition-colors active:scale-95"
-              style={{ backgroundColor: player.color }}
-            >
-              {player.name}
-            </button>
-          ))}
+      {/* Turns mode: active player indicator */}
+      {isTurnsMode && !feedback && (
+        <div
+          className="text-center py-2.5 rounded-lg text-white font-bold text-sm"
+          style={{ backgroundColor: state.players[activePlayer].color }}
+        >
+          Turno de {state.players[activePlayer].name}
         </div>
       )}
 
-      {claimingPlayerData && !feedback && (
-        <div
-          className="text-center py-2.5 rounded-lg text-white font-bold text-sm"
-          style={{ backgroundColor: claimingPlayerData.color }}
-        >
-          {claimingPlayerData.name} &mdash; Tocá la cara repetida!
+      {/* Race mode: player claim buttons (shown after face is tapped) */}
+      {isRaceMode && selectedFace !== null && !disabled && !feedback && (
+        <div className="space-y-1">
+          <p className="text-center text-xs text-gray-500 font-semibold">Quién encontró la cara?</p>
+          <div className="flex gap-2">
+            {state.players.map((player) => (
+              <button
+                key={player.id}
+                onClick={() => handleRaceClaim(player.id)}
+                className="flex-1 py-3 text-white text-sm font-bold rounded-lg transition-colors active:scale-95"
+                style={{ backgroundColor: player.color }}
+              >
+                {player.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Race mode: instruction when no face selected */}
+      {isRaceMode && selectedFace === null && !feedback && (
+        <div className="text-center py-2 text-gray-400 text-sm font-semibold">
+          Tocá la cara que se repite!
         </div>
       )}
 
@@ -225,7 +278,7 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
             card={state.round.card1}
             faces={state.faces}
             onFaceTap={handleFaceTap}
-            disabled={disabled || (state.mode === 'same_screen' && !claimingPlayer)}
+            disabled={disabled || (isRaceMode && selectedFace !== null)}
             highlightFace={highlightFace}
             highlightColor={highlightColor}
             drunkMode={state.drunkMode}
@@ -236,7 +289,7 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
             card={state.round.card2}
             faces={state.faces}
             onFaceTap={handleFaceTap}
-            disabled={disabled || (state.mode === 'same_screen' && !claimingPlayer)}
+            disabled={disabled || (isRaceMode && selectedFace !== null)}
             highlightFace={highlightFace}
             highlightColor={highlightColor}
             drunkMode={state.drunkMode}

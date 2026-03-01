@@ -1,4 +1,4 @@
-import type { GameState, CardDisplay, RoundState, PlayerState, FaceData } from '@/types/game';
+import type { GameState, CardDisplay, RoundState, PlayerState, FaceData, TurnStyle } from '@/types/game';
 import { generateCards, findMatch, shuffleArray } from './projective-plane';
 import { getDifficultyByOrder } from './difficulty';
 
@@ -13,7 +13,8 @@ export function createGameState(
   totalRounds: number,
   mode: 'same_screen' | 'online',
   timerSeconds: number | null,
-  drunkMode: boolean = false
+  drunkMode: boolean = false,
+  turnStyle: TurnStyle = 'turns'
 ): GameState {
   const difficulty = getDifficultyByOrder(difficultyOrder);
 
@@ -43,6 +44,7 @@ export function createGameState(
     round: null,
     status: 'lobby',
     mode,
+    turnStyle,
     timerSeconds,
     drunkMode,
     usedCardPairs: [],

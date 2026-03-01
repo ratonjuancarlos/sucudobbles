@@ -9,7 +9,7 @@ interface GameCardProps {
   onFaceTap: (faceIndex: number) => void;
   disabled?: boolean;
   highlightFace?: number | null;
-  highlightColor?: 'green' | 'red' | null;
+  highlightColor?: 'green' | 'red' | 'blue' | null;
   drunkMode?: boolean;
 }
 
@@ -75,7 +75,11 @@ export function GameCard({
                     ? 'border-green-500 ring-4 ring-green-300 scale-110'
                     : isHighlighted && highlightColor === 'red'
                       ? 'border-red-500 ring-4 ring-red-300 animate-shake'
-                      : ''
+                      : isHighlighted && highlightColor === 'blue'
+                        ? 'border-indigo-500 ring-4 ring-indigo-300 scale-110'
+                        : isHighlighted && !highlightColor
+                          ? 'border-yellow-400 ring-4 ring-yellow-200 scale-110'
+                          : ''
                 }`}
               >
                 <img
