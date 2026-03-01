@@ -13,9 +13,25 @@ let refCount = 0;
 
 function getSocket(): TypedSocket {
   if (!globalSocket) {
+    console.log('[socket] Creating new socket connection');
     globalSocket = io({
       path: '/api/socketio',
       autoConnect: true,
+    });
+    globalSocket.on('connect', () => {
+      console.log('[socket] Connected, id:', globalSocket?.id, 'transport:', globalSocket?.io?.engine?.transport?.name);
+    });
+    globalSocket.on('disconnect', (reason) => {
+      console.log('[socket] Disconnected, reason:', reason);
+    });
+    globalSocket.on('connect_error', (err) => {
+      console.log('[socket] Connection error:', err.message);
+    });
+    globalSocket.io.on('reconnect_attempt', (attempt) => {
+      console.log('[socket] Reconnect attempt #', attempt);
+    });
+    globalSocket.io.on('reconnect', (attempt) => {
+      console.log('[socket] Reconnected after', attempt, 'attempts, new id:', globalSocket?.id);
     });
   }
   return globalSocket;

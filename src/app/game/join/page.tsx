@@ -21,9 +21,15 @@ function JoinContent() {
     setJoining(true);
     setError('');
 
-    emit('join-room', { roomCode: roomCode.trim().toUpperCase(), playerName: playerName.trim() }, (response) => {
+    const trimmedName = playerName.trim();
+    const code = roomCode.trim().toUpperCase();
+    console.log('[join] Emitting join-room. code:', code, 'name:', trimmedName, 'connected:', connected);
+    emit('join-room', { roomCode: code, playerName: trimmedName }, (response) => {
+      console.log('[join] join-room response:', response);
       if (response.success) {
-        router.push(`/game/lobby/${roomCode.trim().toUpperCase()}`);
+        // Store for rejoin on reconnect
+        sessionStorage.setItem('playerName', trimmedName);
+        router.push(`/game/lobby/${code}`);
       } else {
         setError(response.error || 'Error al unirse');
         setJoining(false);

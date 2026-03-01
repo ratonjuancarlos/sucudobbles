@@ -27,6 +27,11 @@ export interface ClientToServerEvents {
     callback: (response: { success: boolean; error?: string }) => void
   ) => void;
 
+  'rejoin-room': (
+    data: { roomCode: string; playerName: string },
+    callback: (response: { success: boolean; error?: string }) => void
+  ) => void;
+
   'start-game': (data: { roomCode: string }) => void;
 
   'guess': (data: { roomCode: string; faceIndex: number }) => void;

@@ -38,10 +38,33 @@ export default function LobbyPage() {
 
     setCreating(true);
     const config = JSON.parse(configStr);
+    // Store host name for rejoin on reconnect
+    sessionStorage.setItem('playerName', config.hostName);
+    console.log('[lobby] Emitting create-room as', config.hostName);
     emit('create-room', config, (response) => {
+      console.log('[lobby] Room created:', response.roomCode);
       router.replace(`/game/lobby/${response.roomCode}`);
     });
   }, [roomCode, connected, emit, router, creating]);
+
+  // Rejoin room on mount / reconnect — re-associates this socket with the room
+  useEffect(() => {
+    if (roomCode === 'new' || !connected) return;
+
+    const playerName = sessionStorage.getItem('playerName') || '';
+    console.log('[lobby] Rejoin effect triggered. roomCode:', roomCode, 'connected:', connected, 'playerName:', playerName);
+    if (!playerName) {
+      console.log('[lobby] No playerName in sessionStorage, skipping rejoin');
+      return;
+    }
+
+    emit('rejoin-room', { roomCode, playerName }, (response) => {
+      console.log('[lobby] Rejoin response:', response);
+      if (!response.success) {
+        console.error('[lobby] rejoin failed:', response.error);
+      }
+    });
+  }, [roomCode, connected, emit]);
 
   // Listen for events
   useEffect(() => {
