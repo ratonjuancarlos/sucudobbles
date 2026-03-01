@@ -16,7 +16,7 @@ app.prepare().then(() => {
   });
 
   const io = new SocketIOServer(httpServer, {
-    cors: { origin: dev ? '*' : process.env.NEXT_PUBLIC_URL },
+    cors: { origin: '*' },
     path: '/api/socketio',
   });
 
