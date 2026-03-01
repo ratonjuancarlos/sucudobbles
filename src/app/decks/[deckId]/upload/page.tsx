@@ -28,61 +28,71 @@ export default function UploadPage() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
     setError('');
     setDetectedFaces([]);
-
-    const url = URL.createObjectURL(file);
-    setImageUrl(url);
-
-    const img = new Image();
-    img.src = url;
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = reject;
-    });
-
     setDetecting(true);
 
+    // Show preview of first image
+    const firstUrl = URL.createObjectURL(files[0]);
+    setImageUrl(firstUrl);
+
+    const allFaces: DetectedFace[] = [];
+    let noFacesCount = 0;
+
     try {
-      // Draw image to canvas first - face-api.js works better with canvas
-      // Also scale down very large images to improve performance
-      const MAX_DIM = 1024;
-      let w = img.naturalWidth;
-      let h = img.naturalHeight;
-      const scale = Math.min(1, MAX_DIM / Math.max(w, h));
-      w = Math.round(w * scale);
-      h = Math.round(h * scale);
+      for (const file of Array.from(files)) {
+        const url = URL.createObjectURL(file);
+        const img = new Image();
+        img.src = url;
+        await new Promise((resolve, reject) => {
+          img.onload = resolve;
+          img.onerror = reject;
+        });
 
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d')!;
-      ctx.drawImage(img, 0, 0, w, h);
+        const MAX_DIM = 1024;
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
+        const scale = Math.min(1, MAX_DIM / Math.max(w, h));
+        w = Math.round(w * scale);
+        h = Math.round(h * scale);
 
-      // Detect faces on the canvas (more reliable than on img element)
-      const detections = await detectFaces(canvas);
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d')!;
+        ctx.drawImage(img, 0, 0, w, h);
 
-      if (detections.length === 0) {
-        setError('No se detectaron caras. Probá con una foto donde se vea bien la cara de frente, con buena iluminación.');
-        setDetecting(false);
-        return;
+        const detections = await detectFaces(canvas);
+
+        if (detections.length === 0) {
+          noFacesCount++;
+          if (url !== firstUrl) URL.revokeObjectURL(url);
+          continue;
+        }
+
+        for (const detection of detections) {
+          const box = getFaceBox(detection);
+          const blob = await cropFaceFromCanvas(canvas, box);
+          const previewUrl = createPreviewUrl(blob);
+          allFaces.push({ box, previewUrl, blob, label: '', approved: false });
+        }
+
+        if (url !== firstUrl) URL.revokeObjectURL(url);
       }
 
-      const faces: DetectedFace[] = [];
-      for (const detection of detections) {
-        const box = getFaceBox(detection);
-        const blob = await cropFaceFromCanvas(canvas, box);
-        const previewUrl = createPreviewUrl(blob);
-        faces.push({ box, previewUrl, blob, label: '', approved: false });
+      if (allFaces.length === 0) {
+        setError('No se detectaron caras en ninguna foto. Probá con fotos donde se vean bien las caras de frente.');
+      } else if (noFacesCount > 0) {
+        setError(`${noFacesCount} foto${noFacesCount > 1 ? 's' : ''} sin caras detectadas.`);
       }
 
-      setDetectedFaces(faces);
+      setDetectedFaces(allFaces);
     } catch (err) {
       console.error('[upload] Face detection error:', err);
-      setError('Error al detectar caras. Probá con otra imagen.');
+      setError('Error al detectar caras. Probá con otras imágenes.');
     } finally {
       setDetecting(false);
     }
@@ -153,14 +163,15 @@ export default function UploadPage() {
         {/* File picker */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 text-center space-y-3">
           <p className="text-gray-500 text-sm">
-            Seleccioná una foto con una o más caras
+            Seleccioná una o más fotos con caras
           </p>
           <label className="inline-block bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-indigo-700 transition-colors cursor-pointer">
-            Elegir foto
+            Elegir fotos
             <input
               ref={fileInputRef}
               type="file"
               accept="image/*"
+              multiple
               onChange={handleFileSelect}
               className="hidden"
             />
