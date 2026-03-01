@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// === AUTH MODELS (NextAuth) ===
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// === APP MODELS ===
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  decks         Deck[]
+  players       Player[]
+  stats         UserStats?
+  createdAt     DateTime  @default(now())
+}
+
+model UserStats {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  gamesPlayed  Int      @default(0)
+  gamesWon     Int      @default(0)
+  totalCorrect Int      @default(0)
+  totalGuesses Int      @default(0)
+  bestTimeMs   Int?
+  updatedAt    DateTime @updatedAt
+}
+
+model Deck {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  faces       Face[]
+  games       Game[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Face {
+  id        String   @id @default(cuid())
+  label     String
+  imageUrl  String
+  imageKey  String
+  width     Int      @default(200)
+  height    Int      @default(200)
+  deckId    String
+  deck      Deck     @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([deckId])
+}
+
+enum GameStatus {
+  LOBBY
+  PLAYING
+  PAUSED
+  FINISHED
+}
+
+enum GameMode {
+  SAME_SCREEN
+  ONLINE
+}
+
+model Game {
+  id           String     @id @default(cuid())
+  roomCode     String     @unique
+  status       GameStatus @default(LOBBY)
+  mode         GameMode   @default(SAME_SCREEN)
+  difficulty   Int        @default(3)
+  deckId       String
+  deck         Deck       @relation(fields: [deckId], references: [id])
+  players      Player[]
+  rounds       Round[]
+  currentRound Int        @default(0)
+  totalRounds  Int        @default(20)
+  timerSeconds Int?
+  createdAt    DateTime   @default(now())
+  finishedAt   DateTime?
+
+  @@index([roomCode])
+  @@index([deckId])
+}
+
+model Player {
+  id      String  @id @default(cuid())
+  name    String
+  score   Int     @default(0)
+  gameId  String
+  game    Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  userId  String?
+  user    User?   @relation(fields: [userId], references: [id])
+  guesses Guess[]
+  color   String  @default("#3B82F6")
+
+  @@index([gameId])
+}
+
+model Round {
+  id           String    @id @default(cuid())
+  roundNumber  Int
+  gameId       String
+  game         Game      @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  card1Symbols Int[]
+  card2Symbols Int[]
+  matchSymbol  Int
+  guesses      Guess[]
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+
+  @@unique([gameId, roundNumber])
+  @@index([gameId])
+}
+
+model Guess {
+  id        String   @id @default(cuid())
+  playerId  String
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  roundId   String
+  round     Round    @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  symbol    Int
+  correct   Boolean
+  timeMs    Int
+  createdAt DateTime @default(now())
+
+  @@index([roundId])
+  @@index([playerId])
+}
