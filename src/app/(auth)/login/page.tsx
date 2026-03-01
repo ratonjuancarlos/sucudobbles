@@ -7,6 +7,16 @@ import { Suspense } from 'react';
 function LoginContent() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/dashboard';
+  const error = searchParams.get('error');
+
+  const errorMessages: Record<string, string> = {
+    OAuthSignin: 'Error al iniciar OAuth con Google',
+    OAuthCallback: 'Error en callback de Google',
+    OAuthCreateAccount: 'Error al crear cuenta',
+    Callback: 'Error en callback',
+    OAuthAccountNotLinked: 'Email ya vinculado a otra cuenta',
+    Default: 'Error de autenticación',
+  };
 
   return (
     <main className="min-h-dvh flex flex-col items-center justify-center px-6 bg-gray-50">
@@ -17,6 +27,15 @@ function LoginContent() {
           </h1>
           <p className="text-gray-500 mt-2">Iniciá sesión para jugar</p>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+            <p className="text-red-600 text-sm font-semibold">
+              {errorMessages[error] || errorMessages.Default}
+            </p>
+            <p className="text-red-400 text-xs mt-1">Código: {error}</p>
+          </div>
+        )}
 
         <button
           onClick={() => signIn('google', { callbackUrl })}
