@@ -78,10 +78,10 @@ model Deck {
   description String?
   userId      String
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  faces       Face[]
-  games       Game[]
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  faces         Face[]
+  games         Game[]
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([userId])
 }

@@ -9,7 +9,10 @@ export default async function DashboardPage() {
 
   const decks = await prisma.deck.findMany({
     where: { userId: session.user.id },
-    include: { _count: { select: { faces: true } } },
+    include: {
+      _count: { select: { faces: true } },
+      faces: { take: 1, orderBy: { createdAt: 'asc' }, select: { imageUrl: true } },
+    },
     orderBy: { updatedAt: 'desc' },
   });
 
@@ -74,9 +77,17 @@ export default async function DashboardPage() {
               className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 block hover:shadow-md transition-shadow"
             >
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-xl font-black text-indigo-600 shrink-0">
-                  {deck.name.charAt(0).toUpperCase()}
-                </div>
+                {deck.faces[0] ? (
+                  <img
+                    src={deck.faces[0].imageUrl}
+                    alt=""
+                    className="w-12 h-12 rounded-full object-cover border-2 border-gray-200 shrink-0"
+                  />
+                ) : (
+                  <div className="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center text-xl font-black text-indigo-600 shrink-0">
+                    {deck.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-gray-900 text-lg truncate">{deck.name}</h3>
                   {deck.description && (
