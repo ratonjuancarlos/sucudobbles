@@ -12,6 +12,7 @@
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
     "@prisma/client": "^5.22.0",
+    "@supabase/supabase-js": "^2.98.0",
     "face-api.js": "^0.22.2",
     "nanoid": "^5.1.6",
     "next": "16.1.6",
