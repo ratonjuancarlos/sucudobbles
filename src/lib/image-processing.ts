@@ -41,6 +41,14 @@ export async function cropFaceFromCanvas(
 
   ctx.drawImage(source, finalX, finalY, side, side, 0, 0, targetSize, targetSize);
 
+  // White circular border
+  ctx.beginPath();
+  ctx.arc(targetSize / 2, targetSize / 2, targetSize / 2 - 3, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.strokeStyle = '#ffffff';
+  ctx.lineWidth = 6;
+  ctx.stroke();
+
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
