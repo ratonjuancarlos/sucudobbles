@@ -194,8 +194,9 @@ export function processGuess(
 
   let newState: GameState = { ...state, players: newPlayers };
 
-  if (correct) {
-    // Advance to next round
+  // In turns mode, always advance to next round (wrong = lose turn + new cards)
+  // In race mode, only advance on correct (others can still try same cards)
+  if (correct || state.turnStyle === 'turns') {
     newState = nextRound(newState);
   }
 
