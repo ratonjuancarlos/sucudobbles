@@ -6,23 +6,47 @@ import type { ClientToServerEvents, ServerToClientEvents } from '@/types/socket-
 
 type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
+// Singleton socket: shared across all components so navigating
+// between pages doesn't disconnect and destroy the room.
+let globalSocket: TypedSocket | null = null;
+let refCount = 0;
+
+function getSocket(): TypedSocket {
+  if (!globalSocket) {
+    globalSocket = io({
+      path: '/api/socketio',
+      autoConnect: true,
+    });
+  }
+  return globalSocket;
+}
+
 export function useSocket() {
   const socketRef = useRef<TypedSocket | null>(null);
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const socket: TypedSocket = io({
-      path: '/api/socketio',
-      autoConnect: true,
-    });
-
-    socket.on('connect', () => setConnected(true));
-    socket.on('disconnect', () => setConnected(false));
-
+    const socket = getSocket();
     socketRef.current = socket;
+    refCount++;
+
+    const onConnect = () => setConnected(true);
+    const onDisconnect = () => setConnected(false);
+
+    socket.on('connect', onConnect);
+    socket.on('disconnect', onDisconnect);
+
+    if (socket.connected) setConnected(true);
 
     return () => {
-      socket.disconnect();
+      socket.off('connect', onConnect);
+      socket.off('disconnect', onDisconnect);
+      refCount--;
+
+      if (refCount === 0) {
+        socket.disconnect();
+        globalSocket = null;
+      }
     };
   }, []);
 
