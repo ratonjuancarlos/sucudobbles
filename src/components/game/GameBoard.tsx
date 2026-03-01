@@ -12,9 +12,10 @@ import { useSound } from '@/hooks/useSound';
 interface GameBoardProps {
   initialState: GameState;
   onGameEnd: (state: GameState) => void;
+  onQuit?: () => void;
 }
 
-export function GameBoard({ initialState, onGameEnd }: GameBoardProps) {
+export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
   const [state, setState] = useState(initialState);
   const [activePlayer, setActivePlayer] = useState(0);
   const [highlightFace, setHighlightFace] = useState<number | null>(null);
@@ -24,6 +25,7 @@ export function GameBoard({ initialState, onGameEnd }: GameBoardProps) {
   const [feedback, setFeedback] = useState<string | null>(null);
   const [animatingScorePlayer, setAnimatingScorePlayer] = useState<string | null>(null);
   const [roundKey, setRoundKey] = useState(0);
+  const [showQuitConfirm, setShowQuitConfirm] = useState(false);
 
   const sound = useSound();
   const prevSecondsRef = useRef<number | null>(null);
@@ -115,6 +117,15 @@ export function GameBoard({ initialState, onGameEnd }: GameBoardProps) {
     [state, disabled, activePlayer, claimingPlayer, sound]
   );
 
+  const handleQuit = useCallback(() => {
+    if (onQuit) {
+      onQuit();
+    } else {
+      // Force finish with current scores
+      onGameEnd({ ...state, status: 'finished' });
+    }
+  }, [state, onQuit, onGameEnd]);
+
   if (!state.round) return null;
 
   const claimingPlayerData = claimingPlayer
@@ -122,8 +133,9 @@ export function GameBoard({ initialState, onGameEnd }: GameBoardProps) {
     : null;
 
   return (
-    <div className="space-y-3 max-w-lg mx-auto">
-      <div className="flex items-center gap-3">
+    <div className="flex flex-col gap-2 w-full max-w-lg mx-auto h-full">
+      {/* Header: score + timer + controls */}
+      <div className="flex items-center gap-2">
         <div className="flex-1">
           <ScoreDisplay
             players={state.players}
@@ -135,13 +147,42 @@ export function GameBoard({ initialState, onGameEnd }: GameBoardProps) {
         <Timer secondsLeft={timer.secondsLeft} totalSeconds={state.timerSeconds} />
         <button
           onClick={sound.toggleMute}
-          className="text-gray-400 hover:text-gray-600 text-xl p-1"
+          className="text-gray-400 hover:text-gray-600 text-lg p-1"
           title={sound.muted ? 'Activar sonido' : 'Silenciar'}
         >
           {sound.muted ? '🔇' : '🔊'}
         </button>
+        <button
+          onClick={() => setShowQuitConfirm(true)}
+          className="text-gray-400 hover:text-red-500 text-sm font-bold p-1"
+          title="Salir"
+        >
+          ✕
+        </button>
       </div>
 
+      {/* Quit confirmation */}
+      {showQuitConfirm && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center justify-between">
+          <span className="text-red-700 text-sm font-semibold">Abandonar partida?</span>
+          <div className="flex gap-2">
+            <button
+              onClick={handleQuit}
+              className="bg-red-500 text-white text-sm font-bold px-4 py-1.5 rounded-lg"
+            >
+              Salir
+            </button>
+            <button
+              onClick={() => setShowQuitConfirm(false)}
+              className="bg-white border border-gray-300 text-gray-600 text-sm font-bold px-4 py-1.5 rounded-lg"
+            >
+              No
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback */}
       {feedback && (
         <div
           className={`text-center py-2 font-bold text-lg rounded-full animate-feedback-in ${
@@ -152,13 +193,14 @@ export function GameBoard({ initialState, onGameEnd }: GameBoardProps) {
         </div>
       )}
 
+      {/* Player claim buttons */}
       {state.mode === 'same_screen' && !claimingPlayer && !feedback && (
         <div className="flex gap-2">
           {state.players.map((player) => (
             <button
               key={player.id}
               onClick={() => handleClaim(player.id)}
-              className="flex-1 py-3 text-white text-sm font-bold rounded-lg transition-colors"
+              className="flex-1 py-3 text-white text-sm font-bold rounded-lg transition-colors active:scale-95"
               style={{ backgroundColor: player.color }}
             >
               {player.name}
@@ -176,8 +218,9 @@ export function GameBoard({ initialState, onGameEnd }: GameBoardProps) {
         </div>
       )}
 
-      <div key={roundKey} className="grid grid-cols-2 gap-3">
-        <div className="animate-card-enter" style={{ animationDelay: '0s' }}>
+      {/* Cards - stacked vertically, landscape */}
+      <div key={roundKey} className="flex flex-col gap-3 flex-1">
+        <div className="animate-card-enter flex-1" style={{ animationDelay: '0s' }}>
           <GameCard
             card={state.round.card1}
             faces={state.faces}
@@ -188,7 +231,7 @@ export function GameBoard({ initialState, onGameEnd }: GameBoardProps) {
             drunkMode={state.drunkMode}
           />
         </div>
-        <div className="animate-card-enter" style={{ animationDelay: '0.1s' }}>
+        <div className="animate-card-enter flex-1" style={{ animationDelay: '0.1s' }}>
           <GameCard
             card={state.round.card2}
             faces={state.faces}

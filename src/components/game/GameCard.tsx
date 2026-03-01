@@ -31,29 +31,30 @@ export function GameCard({
   }, [card.faces.length]);
 
   return (
-    <div className="bg-white rounded-full border-2 border-gray-300 shadow-md relative overflow-hidden aspect-square">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 shadow-md relative overflow-hidden w-full aspect-video">
       {card.faces.map((facePos, i) => {
         const face = faces[facePos.faceIndex];
         if (!face) return null;
 
         const isHighlighted = highlightFace === facePos.faceIndex;
 
-        const buttonStyle: React.CSSProperties = drunkMode
+        // In drunk mode, the container stays still but the inner content wobbles
+        const containerStyle: React.CSSProperties = {
+          left: `${facePos.x}%`,
+          top: `${facePos.y}%`,
+          width: `${facePos.size}%`,
+          height: `${facePos.size * (16 / 9)}%`,
+          transform: `translate(-50%, -50%)`,
+        };
+
+        const innerStyle: React.CSSProperties = drunkMode
           ? {
-              left: `${facePos.x}%`,
-              top: `${facePos.y}%`,
-              width: `${facePos.size}%`,
-              height: `${facePos.size}%`,
               '--rot': `${facePos.rotation}deg`,
               '--drunk-duration': `${drunkParams[i].duration}s`,
               '--drunk-delay': `${drunkParams[i].delay}s`,
             } as React.CSSProperties
           : {
-              left: `${facePos.x}%`,
-              top: `${facePos.y}%`,
-              width: `${facePos.size}%`,
-              height: `${facePos.size}%`,
-              transform: `translate(-50%, -50%) rotate(${facePos.rotation}deg)`,
+              transform: `rotate(${facePos.rotation}deg)`,
             };
 
         return (
@@ -61,28 +62,33 @@ export function GameCard({
             key={facePos.faceIndex}
             onClick={() => !disabled && onFaceTap(facePos.faceIndex)}
             disabled={disabled}
-            className={`absolute focus:outline-none ${drunkMode ? 'animate-drunk' : ''}`}
-            style={buttonStyle}
+            className="absolute focus:outline-none"
+            style={containerStyle}
           >
             <div
-              className={`rounded-full border-2 border-gray-300 overflow-hidden cursor-pointer w-full h-full transition-transform hover:scale-110 active:scale-95 ${
-                isHighlighted && highlightColor === 'green'
-                  ? 'border-green-500 ring-4 ring-green-300 scale-110'
-                  : isHighlighted && highlightColor === 'red'
-                    ? 'border-red-500 ring-4 ring-red-300 animate-shake'
-                    : ''
-              }`}
+              className={`w-full h-full ${drunkMode ? 'animate-drunk' : ''}`}
+              style={innerStyle}
             >
-              <img
-                src={face.imageUrl}
-                alt={face.label}
-                className="w-full h-full object-cover pointer-events-none"
-                draggable={false}
-              />
+              <div
+                className={`rounded-full border-2 border-gray-300 overflow-hidden cursor-pointer w-full h-full transition-transform hover:scale-110 active:scale-95 ${
+                  isHighlighted && highlightColor === 'green'
+                    ? 'border-green-500 ring-4 ring-green-300 scale-110'
+                    : isHighlighted && highlightColor === 'red'
+                      ? 'border-red-500 ring-4 ring-red-300 animate-shake'
+                      : ''
+                }`}
+              >
+                <img
+                  src={face.imageUrl}
+                  alt={face.label}
+                  className="w-full h-full object-cover pointer-events-none"
+                  draggable={false}
+                />
+              </div>
+              <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 text-[9px] text-gray-500 whitespace-nowrap font-semibold bg-white/90 px-1.5 py-0.5 rounded-full border border-gray-100">
+                {face.label}
+              </span>
             </div>
-            <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 text-[9px] text-gray-500 whitespace-nowrap font-semibold bg-white/90 px-1.5 py-0.5 rounded-full border border-gray-100">
-              {face.label}
-            </span>
           </button>
         );
       })}

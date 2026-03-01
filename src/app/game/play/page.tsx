@@ -102,13 +102,14 @@ export default function PlayPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-gray-50 p-3 flex flex-col justify-center">
+    <div className="h-dvh bg-gray-50 p-3 flex flex-col">
       <GameBoard
         initialState={gameState}
         onGameEnd={(finalState) => {
           setGameState(finalState);
           setFinished(true);
         }}
+        onQuit={() => router.push('/dashboard')}
       />
     </div>
   );
