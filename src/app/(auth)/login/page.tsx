@@ -23,7 +23,7 @@ function LoginContent() {
       <div className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm space-y-6 border border-gray-200">
         <div className="text-center">
           <h1 className="text-3xl font-black text-gray-900">
-            Sucu<span className="text-indigo-600">dobles</span>
+            Sucu<span className="text-indigo-600">dobble</span>
           </h1>
           <p className="text-gray-500 mt-2">Iniciá sesión para jugar</p>
         </div>

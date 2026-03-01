@@ -18,7 +18,7 @@ export default async function DashboardPage() {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
           <h1 className="text-xl font-black text-gray-900">
-            Sucu<span className="text-indigo-600">dobles</span>
+            Sucu<span className="text-indigo-600">dobble</span>
           </h1>
           <div className="flex items-center gap-3">
             <Link href="/leaderboard" className="text-indigo-600 font-semibold text-sm hover:underline">

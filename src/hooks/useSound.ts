@@ -17,7 +17,7 @@ export function useSound() {
   const [muted, setMuted] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem('sucudobles-muted');
+    const stored = localStorage.getItem('sucudobble-muted');
     if (stored === 'true') setMuted(true);
 
     // Preload all sounds
@@ -43,7 +43,7 @@ export function useSound() {
   const toggleMute = useCallback(() => {
     setMuted((prev) => {
       const next = !prev;
-      localStorage.setItem('sucudobles-muted', String(next));
+      localStorage.setItem('sucudobble-muted', String(next));
       return next;
     });
   }, []);

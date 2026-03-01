@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Sucudobbles",
+  title: "Sucudobble",
   description:
     "Encontrá la cara repetida - Juego tipo Dobble con fotos de personas",
 };

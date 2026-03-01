@@ -6,7 +6,7 @@ export default function Home() {
       <div className="text-center space-y-8 max-w-sm">
         <div className="space-y-2">
           <h1 className="text-5xl sm:text-6xl font-black text-gray-900 tracking-tight">
-            Sucu<span className="text-indigo-600">dobles</span>
+            Sucu<span className="text-indigo-600">dobble</span>
           </h1>
           <p className="text-lg text-gray-500">
             Encontrá la cara repetida entre dos cartas
