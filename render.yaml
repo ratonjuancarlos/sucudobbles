@@ -24,3 +24,5 @@ services:
         sync: false
       - key: UPLOADTHING_TOKEN
         sync: false
+      - key: SKIP_AUTH
+        sync: false

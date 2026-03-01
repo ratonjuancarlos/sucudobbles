@@ -19,7 +19,7 @@ export default function Home() {
         </p>
 
         <Link
-          href="/login"
+          href="/dashboard"
           className="inline-block bg-indigo-600 text-white font-bold text-lg px-10 py-4 rounded-xl hover:bg-indigo-700 transition-colors"
         >
           A jugar!
