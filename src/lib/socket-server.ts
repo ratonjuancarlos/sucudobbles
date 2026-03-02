@@ -305,7 +305,7 @@ export function setupSocketHandlers(io: TypedServer) {
           'online',
           room.config.timerSeconds,
           room.config.drunkMode,
-          'race'
+          'turns'
         );
 
         room.gameState = startGame(state);
@@ -357,22 +357,21 @@ export function setupSocketHandlers(io: TypedServer) {
         scores,
       });
 
-      if (correct) {
-        if (newState.status === 'finished') {
-          clearRoomTimer(room);
-          const winner = getWinner(newState);
-          io.to(data.roomCode).emit('game-over', {
-            players: newState.players,
-            winnerId: winner?.id || '',
-          });
-        } else {
-          io.to(data.roomCode).emit('round-advanced', {
-            round: newState.round,
-            currentRound: newState.currentRound,
-            scores,
-          });
-          startRoundTimer(io, room);
-        }
+      // Always advance the round after any guess (correct or not)
+      if (newState.status === 'finished') {
+        clearRoomTimer(room);
+        const winner = getWinner(newState);
+        io.to(data.roomCode).emit('game-over', {
+          players: newState.players,
+          winnerId: winner?.id || '',
+        });
+      } else {
+        io.to(data.roomCode).emit('round-advanced', {
+          round: newState.round,
+          currentRound: newState.currentRound,
+          scores,
+        });
+        startRoundTimer(io, room);
       }
     });
 
