@@ -9,7 +9,7 @@ const DIFF_COLORS: Record<string, string> = {
   easy: 'bg-green-100 text-green-700 border-green-300',
   normal: 'bg-blue-100 text-blue-700 border-blue-300',
   hard: 'bg-orange-100 text-orange-700 border-orange-300',
-  expert: 'bg-pink-100 text-pink-700 border-pink-300',
+  expert: 'bg-red-100 text-red-700 border-red-300',
 };
 
 interface DeckOption {
@@ -230,7 +230,7 @@ function SetupContent() {
                           >
                             <div className="font-bold text-sm">{d.label}</div>
                             <div className="text-[11px] opacity-60 font-semibold">
-                              {locked ? `Faltan ${missing} caras` : `${d.symbolsPerCard}/carta`}
+                              {locked ? `Faltan ${missing} caras` : 'por carta'}
                             </div>
                           </button>
                         );

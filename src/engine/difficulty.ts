@@ -10,7 +10,7 @@ export interface DifficultyConfig {
 export const DIFFICULTIES: DifficultyConfig[] = [
   {
     key: 'easy',
-    label: 'Fácil',
+    label: '3 caras',
     order: 2,
     symbolsPerCard: 3,
     totalSymbols: 7,
@@ -18,11 +18,27 @@ export const DIFFICULTIES: DifficultyConfig[] = [
   },
   {
     key: 'normal',
-    label: 'Normal',
+    label: '4 caras',
     order: 3,
     symbolsPerCard: 4,
     totalSymbols: 13,
     totalCards: 13,
+  },
+  {
+    key: 'hard',
+    label: '6 caras',
+    order: 5,
+    symbolsPerCard: 6,
+    totalSymbols: 31,
+    totalCards: 31,
+  },
+  {
+    key: 'expert',
+    label: '8 caras',
+    order: 7,
+    symbolsPerCard: 8,
+    totalSymbols: 57,
+    totalCards: 57,
   },
 ];
 
