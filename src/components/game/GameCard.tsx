@@ -60,10 +60,10 @@ export function GameCard({
         return (
           <button
             key={facePos.faceIndex}
-            onClick={() => !disabled && onFaceTap(facePos.faceIndex)}
+            onPointerDown={() => !disabled && onFaceTap(facePos.faceIndex)}
             disabled={disabled}
             className="absolute focus:outline-none"
-            style={containerStyle}
+            style={{ ...containerStyle, touchAction: 'manipulation' }}
           >
             <div
               className={`w-full h-full ${drunkMode ? 'animate-drunk' : ''}`}

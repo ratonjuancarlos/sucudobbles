@@ -102,77 +102,55 @@ function pickCardPair(state: GameState): { card1Index: number; card2Index: numbe
 
 function buildCardDisplay(symbols: number[]): CardDisplay {
   const shuffled = shuffleArray(symbols);
-  const faces = shuffled.map((faceIndex, i) => {
-    const pos = calculatePosition(i, shuffled.length);
-    return {
-      faceIndex,
-      ...pos,
-    };
-  });
-
+  const positions = generatePositions(shuffled.length);
+  const faces = shuffled.map((faceIndex, i) => ({
+    faceIndex,
+    ...positions[i],
+  }));
   return { symbols, faces };
 }
 
-function calculatePosition(
-  index: number,
+function generatePositions(
   total: number
-): { x: number; y: number; size: number; rotation: number } {
-  // Distribute faces in a natural-looking scattered layout within a card
-  // Card area is 0-100 in both axes, with padding
-  const padding = 15;
-  const area = 100 - padding * 2;
-
-  if (total <= 3) {
-    // Triangle layout
-    const positions = [
-      { x: 50, y: 30 },
-      { x: 30, y: 70 },
-      { x: 70, y: 70 },
-    ];
-    const pos = positions[index];
-    return {
-      x: pos.x,
-      y: pos.y,
-      size: 30 + Math.random() * 10,
-      rotation: (Math.random() - 0.5) * 30,
-    };
-  }
+): { x: number; y: number; size: number; rotation: number }[] {
+  // Random starting angle so the whole layout rotates differently each round
+  const baseAngle = Math.random() * Math.PI * 2;
 
   if (total <= 4) {
-    // Diamond layout
-    const positions = [
-      { x: 50, y: 20 },
-      { x: 25, y: 50 },
-      { x: 75, y: 50 },
-      { x: 50, y: 80 },
-    ];
-    const pos = positions[index];
-    return {
-      x: pos.x,
-      y: pos.y,
-      size: 25 + Math.random() * 8,
-      rotation: (Math.random() - 0.5) * 25,
-    };
+    // Circular arrangement with random base angle — radius varies by count
+    const radius = total <= 3 ? 28 : 30;
+    const size = total <= 3 ? 28 : 24;
+    const sizeJitter = total <= 3 ? 10 : 8;
+    return Array.from({ length: total }, (_, i) => {
+      const angle = baseAngle + (i / total) * Math.PI * 2;
+      return {
+        x: 50 + Math.cos(angle) * radius,
+        y: 50 + Math.sin(angle) * radius,
+        size: size + Math.random() * sizeJitter,
+        rotation: (Math.random() - 0.5) * 40,
+      };
+    });
   }
 
-  // For 6+ faces: spiral-ish layout with one in center
-  if (index === 0) {
+  // For 6+ faces: one in center, rest evenly around a circle
+  return Array.from({ length: total }, (_, i) => {
+    if (i === 0) {
+      return {
+        x: 50,
+        y: 50,
+        size: 20 + Math.random() * 8,
+        rotation: (Math.random() - 0.5) * 20,
+      };
+    }
+    const angle = baseAngle + ((i - 1) / (total - 1)) * Math.PI * 2;
+    const radius = 25 + Math.random() * 8;
     return {
-      x: 50,
-      y: 50,
-      size: 20 + Math.random() * 8,
-      rotation: (Math.random() - 0.5) * 20,
+      x: 50 + Math.cos(angle) * radius,
+      y: 50 + Math.sin(angle) * radius,
+      size: 16 + Math.random() * 7,
+      rotation: (Math.random() - 0.5) * 30,
     };
-  }
-
-  const angle = ((index - 1) / (total - 1)) * Math.PI * 2 + Math.random() * 0.3;
-  const radius = 25 + Math.random() * 10;
-  return {
-    x: 50 + Math.cos(angle) * radius,
-    y: 50 + Math.sin(angle) * radius,
-    size: 16 + Math.random() * 8,
-    rotation: (Math.random() - 0.5) * 30,
-  };
+  });
 }
 
 export function processGuess(
