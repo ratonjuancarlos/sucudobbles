@@ -24,22 +24,6 @@ export const DIFFICULTIES: DifficultyConfig[] = [
     totalSymbols: 13,
     totalCards: 13,
   },
-  {
-    key: 'hard',
-    label: 'Difícil',
-    order: 5,
-    symbolsPerCard: 6,
-    totalSymbols: 31,
-    totalCards: 31,
-  },
-  {
-    key: 'expert',
-    label: 'Experto',
-    order: 7,
-    symbolsPerCard: 8,
-    totalSymbols: 57,
-    totalCards: 57,
-  },
 ];
 
 export function getDifficulty(key: string): DifficultyConfig {
