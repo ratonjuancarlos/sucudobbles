@@ -34,7 +34,7 @@ export interface ClientToServerEvents {
 
   'start-game': (data: { roomCode: string }) => void;
 
-  'guess': (data: { roomCode: string; faceIndex: number }) => void;
+  'guess': (data: { roomCode: string; faceIndex: number; roundNumber: number }) => void;
 
   'leave-room': (data: { roomCode: string }) => void;
 }

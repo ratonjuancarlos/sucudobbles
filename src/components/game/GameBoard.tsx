@@ -175,7 +175,7 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
   if (!state.round) return null;
 
   return (
-    <div className="flex flex-col gap-2 w-full max-w-lg mx-auto h-full">
+    <div className="flex flex-col gap-2 w-full max-w-2xl mx-auto h-full">
       {/* Header: score + timer + controls */}
       <div className="flex items-center gap-2">
         <div className="flex-1">

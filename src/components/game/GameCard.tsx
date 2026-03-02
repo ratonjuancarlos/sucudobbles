@@ -31,7 +31,7 @@ export function GameCard({
   }, [card.faces.length]);
 
   return (
-    <div className="bg-white rounded-2xl border-2 border-gray-300 shadow-md relative overflow-hidden w-full aspect-video">
+    <div className="bg-white rounded-2xl border-2 border-gray-300 shadow-md relative overflow-hidden w-full min-h-[180px] aspect-video">
       {card.faces.map((facePos, i) => {
         const face = faces[facePos.faceIndex];
         if (!face) return null;

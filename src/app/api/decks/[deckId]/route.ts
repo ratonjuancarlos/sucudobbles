@@ -89,11 +89,16 @@ export async function DELETE(
     return NextResponse.json({ error: 'Mazo no encontrado' }, { status: 404 });
   }
 
-  // Delete face images from storage
+  // Delete face images from storage (errors are swallowed intentionally)
   await Promise.all(deck.faces.map((face) => deleteFile(face.imageKey)));
 
   // Cascade deletes faces
-  await prisma.deck.delete({ where: { id: deckId } });
+  try {
+    await prisma.deck.delete({ where: { id: deckId } });
+  } catch (err) {
+    console.error('[api] Error deleting deck:', err);
+    return NextResponse.json({ error: 'No se pudo eliminar el mazo' }, { status: 409 });
+  }
 
   return NextResponse.json({ ok: true });
 }

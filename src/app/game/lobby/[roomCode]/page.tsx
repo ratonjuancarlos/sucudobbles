@@ -118,8 +118,8 @@ export default function LobbyPage() {
   }, [roomCode, connected, on, sound]);
 
   const handleGuess = useCallback(
-    (faceIndex: number) => {
-      emit('guess', { roomCode, faceIndex });
+    (faceIndex: number, roundNumber: number) => {
+      emit('guess', { roomCode, faceIndex, roundNumber });
     },
     [emit, roomCode]
   );
@@ -159,7 +159,7 @@ export default function LobbyPage() {
   // Playing state
   if (gameState && gameState.round) {
     return (
-      <div className="min-h-dvh bg-gray-50 p-3 flex flex-col justify-center">
+      <div className="h-dvh bg-gray-50 p-3 flex flex-col">
         <OnlineGameBoard gameState={gameState} onGuess={handleGuess} sound={sound} on={on} />
       </div>
     );
@@ -236,7 +236,7 @@ function OnlineGameBoard({
   on,
 }: {
   gameState: GameState;
-  onGuess: (faceIndex: number) => void;
+  onGuess: (faceIndex: number, roundNumber: number) => void;
   sound: ReturnType<typeof useSound>;
   on: ReturnType<typeof useSocket>['on'];
 }) {
@@ -266,15 +266,15 @@ function OnlineGameBoard({
   }, [on, gameState.timerSeconds]);
 
   function handleFaceTap(faceIndex: number) {
-    if (disabled) return;
+    if (disabled || !gameState.round) return;
     setDisabled(true);
-    onGuess(faceIndex);
+    onGuess(faceIndex, gameState.round.roundNumber);
   }
 
   if (!gameState.round) return null;
 
   return (
-    <div className="space-y-3 max-w-lg mx-auto">
+    <div className="flex flex-col gap-2 w-full max-w-2xl mx-auto h-full">
       <div className="flex items-center gap-3">
         <div className="flex-1">
           <ScoreDisplay
@@ -297,8 +297,8 @@ function OnlineGameBoard({
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="animate-card-enter">
+      <div className="flex flex-col gap-3 flex-1">
+        <div className="animate-card-enter flex-1">
           <GameCard
             card={gameState.round.card1}
             faces={gameState.faces}
@@ -309,7 +309,7 @@ function OnlineGameBoard({
             drunkMode={gameState.drunkMode}
           />
         </div>
-        <div className="animate-card-enter" style={{ animationDelay: '0.1s' }}>
+        <div className="animate-card-enter flex-1" style={{ animationDelay: '0.1s' }}>
           <GameCard
             card={gameState.round.card2}
             faces={gameState.faces}

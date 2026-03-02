@@ -55,10 +55,24 @@ export default function DeckDetailPage() {
     setDeleting(null);
   }
 
+  const [deletingDeck, setDeletingDeck] = useState(false);
+
   async function deleteDeck() {
     if (!confirm('Eliminar este mazo y todas sus caras?')) return;
-    await fetch(`/api/decks/${deckId}`, { method: 'DELETE' });
-    router.push('/dashboard');
+    setDeletingDeck(true);
+    try {
+      const res = await fetch(`/api/decks/${deckId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.error || 'No se pudo eliminar el mazo. Intentá de nuevo.');
+        setDeletingDeck(false);
+        return;
+      }
+      router.push('/dashboard');
+    } catch {
+      alert('Error de red. Intentá de nuevo.');
+      setDeletingDeck(false);
+    }
   }
 
   if (loading) {
@@ -87,9 +101,10 @@ export default function DeckDetailPage() {
           </div>
           <button
             onClick={deleteDeck}
-            className="text-red-500 font-semibold text-xs px-3 py-1 rounded-full border border-red-200 hover:bg-red-50 transition-colors"
+            disabled={deletingDeck}
+            className="text-red-500 font-semibold text-xs px-3 py-1 rounded-full border border-red-200 hover:bg-red-50 transition-colors disabled:opacity-50"
           >
-            Eliminar
+            {deletingDeck ? 'Eliminando...' : 'Eliminar'}
           </button>
         </div>
       </header>

@@ -303,7 +303,8 @@ export function setupSocketHandlers(io: TypedServer) {
           room.config.totalRounds,
           'online',
           room.config.timerSeconds,
-          room.config.drunkMode
+          room.config.drunkMode,
+          'race'
         );
 
         room.gameState = startGame(state);
@@ -330,6 +331,9 @@ export function setupSocketHandlers(io: TypedServer) {
     socket.on('guess', (data) => {
       const room = rooms.get(data.roomCode);
       if (!room || !room.gameState || room.gameState.status !== 'playing') return;
+
+      // Ignore stale guesses from a previous round
+      if (room.gameState.round && data.roundNumber !== room.gameState.round.roundNumber) return;
 
       const playerEntry = room.players.get(socket.id);
       if (!playerEntry) return;
