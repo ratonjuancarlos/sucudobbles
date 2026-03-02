@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { getAvailableDifficulties } from '@/engine/difficulty';
+import { DIFFICULTIES, getAvailableDifficulties } from '@/engine/difficulty';
 import { PlayerSetup } from '@/components/game/PlayerSetup';
 
 const DIFF_COLORS: Record<string, string> = {
@@ -208,26 +208,33 @@ function SetupContent() {
                   </label>
                   {availableDifficulties.length === 0 ? (
                     <p className="text-sm text-red-500 font-semibold">
-                      Este mazo necesita al menos 7 caras
+                      Este mazo necesita al menos 7 caras para jugar
                     </p>
                   ) : (
                     <div className="grid grid-cols-2 gap-2">
-                      {availableDifficulties.map((d) => (
-                        <button
-                          key={d.key}
-                          onClick={() => setDifficulty(d.key)}
-                          className={`p-3 rounded-xl border text-left transition-all ${
-                            difficulty === d.key
-                              ? `${DIFF_COLORS[d.key]} shadow-sm`
-                              : 'bg-white border-gray-200 hover:border-gray-300'
-                          }`}
-                        >
-                          <div className="font-bold text-sm">{d.label}</div>
-                          <div className="text-[11px] opacity-60 font-semibold">
-                            {d.symbolsPerCard}/carta
-                          </div>
-                        </button>
-                      ))}
+                      {DIFFICULTIES.map((d) => {
+                        const locked = faceCount < d.totalSymbols;
+                        const missing = d.totalSymbols - faceCount;
+                        return (
+                          <button
+                            key={d.key}
+                            onClick={() => !locked && setDifficulty(d.key)}
+                            disabled={locked}
+                            className={`p-3 rounded-xl border text-left transition-all ${
+                              locked
+                                ? 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
+                                : difficulty === d.key
+                                  ? `${DIFF_COLORS[d.key]} shadow-sm`
+                                  : 'bg-white border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className="font-bold text-sm">{d.label}</div>
+                            <div className="text-[11px] opacity-60 font-semibold">
+                              {locked ? `Faltan ${missing} caras` : `${d.symbolsPerCard}/carta`}
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

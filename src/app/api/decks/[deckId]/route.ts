@@ -92,8 +92,10 @@ export async function DELETE(
   // Delete face images from storage (errors are swallowed intentionally)
   await Promise.all(deck.faces.map((face) => deleteFile(face.imageKey)));
 
-  // Cascade deletes faces
   try {
+    // Delete games referencing this deck first (no onDelete cascade on that relation)
+    await prisma.game.deleteMany({ where: { deckId } });
+    // Cascade deletes faces
     await prisma.deck.delete({ where: { id: deckId } });
   } catch (err) {
     console.error('[api] Error deleting deck:', err);
