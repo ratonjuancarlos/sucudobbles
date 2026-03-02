@@ -214,14 +214,15 @@ export default function LobbyPage() {
         {roomState && roomState.players.length >= 2 && (
           <button
             onClick={() => emit('start-game', { roomCode })}
-            className="w-full bg-green-600 text-white font-bold text-lg py-4 rounded-lg hover:bg-green-700 transition-colors"
+            disabled={!connected}
+            className="w-full bg-green-600 text-white font-bold text-lg py-4 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50"
           >
             Empezar partida!
           </button>
         )}
 
         {!connected && (
-          <p className="text-sm text-amber-500 text-center font-semibold">Conectando...</p>
+          <p className="text-sm text-amber-500 text-center font-semibold">Reconectando...</p>
         )}
       </main>
     </div>
@@ -297,8 +298,8 @@ function OnlineGameBoard({
         </div>
       )}
 
-      <div className="flex flex-col gap-3 flex-1">
-        <div className="animate-card-enter flex-1">
+      <div className="flex flex-col gap-3 flex-1 min-h-0">
+        <div className="animate-card-enter flex-1 min-h-0">
           <GameCard
             card={gameState.round.card1}
             faces={gameState.faces}
@@ -309,7 +310,7 @@ function OnlineGameBoard({
             drunkMode={gameState.drunkMode}
           />
         </div>
-        <div className="animate-card-enter flex-1" style={{ animationDelay: '0.1s' }}>
+        <div className="animate-card-enter flex-1 min-h-0" style={{ animationDelay: '0.1s' }}>
           <GameCard
             card={gameState.round.card2}
             faces={gameState.faces}

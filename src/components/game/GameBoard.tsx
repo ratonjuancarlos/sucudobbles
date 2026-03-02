@@ -271,9 +271,9 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
         </div>
       )}
 
-      {/* Cards - stacked vertically, landscape */}
-      <div key={roundKey} className="flex flex-col gap-3 flex-1">
-        <div className="animate-card-enter flex-1" style={{ animationDelay: '0s' }}>
+      {/* Cards - stacked vertically */}
+      <div key={roundKey} className="flex flex-col gap-3 flex-1 min-h-0">
+        <div className="animate-card-enter flex-1 min-h-0" style={{ animationDelay: '0s' }}>
           <GameCard
             card={state.round.card1}
             faces={state.faces}
@@ -284,7 +284,7 @@ export function GameBoard({ initialState, onGameEnd, onQuit }: GameBoardProps) {
             drunkMode={state.drunkMode}
           />
         </div>
-        <div className="animate-card-enter flex-1" style={{ animationDelay: '0.1s' }}>
+        <div className="animate-card-enter flex-1 min-h-0" style={{ animationDelay: '0.1s' }}>
           <GameCard
             card={state.round.card2}
             faces={state.faces}

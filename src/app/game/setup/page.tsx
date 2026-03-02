@@ -103,7 +103,7 @@ function SetupContent() {
     <div className="min-h-dvh bg-gray-50">
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-lg mx-auto px-4 py-3">
-          <button onClick={() => router.back()} className="text-indigo-600 font-semibold text-sm">
+          <button onClick={() => router.push('/dashboard')} className="text-indigo-600 font-semibold text-sm">
             &larr; Volver
           </button>
           <h1 className="text-2xl font-black text-gray-900">Nueva partida</h1>

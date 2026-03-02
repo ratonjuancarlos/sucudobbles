@@ -222,14 +222,15 @@ export function setupSocketHandlers(io: TypedServer) {
       // Try to find the player by name (reconnection with new socket ID)
       const existing = room.playersByName.get(data.playerName);
       if (existing) {
+        const oldSocketId = existing.socketId;
         // Remove old socket mapping
-        room.players.delete(existing.socketId);
+        room.players.delete(oldSocketId);
         // Update socket ID
         existing.socketId = socket.id;
         room.players.set(socket.id, existing);
 
-        // Update host socket if this was the host
-        if (room.hostSocketId === existing.socketId || !room.players.has(room.hostSocketId)) {
+        // Update host socket if this was the host (compare against OLD socket ID)
+        if (room.hostSocketId === oldSocketId || !room.players.has(room.hostSocketId)) {
           room.hostSocketId = socket.id;
         }
 
