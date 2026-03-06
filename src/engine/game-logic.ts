@@ -119,15 +119,15 @@ function generatePositions(
   if (total <= 4) {
     // Circular arrangement with random base angle — radius varies by count
     const radius = total <= 3 ? 28 : 30;
-    const size = total <= 3 ? 28 : 24;
-    const sizeJitter = total <= 3 ? 10 : 8;
+    const size = total <= 3 ? 22 : 18;
+    const sizeJitter = total <= 3 ? 20 : 16;
     return Array.from({ length: total }, (_, i) => {
       const angle = baseAngle + (i / total) * Math.PI * 2;
       return {
         x: 50 + Math.cos(angle) * radius,
         y: 50 + Math.sin(angle) * radius,
         size: size + Math.random() * sizeJitter,
-        rotation: (Math.random() - 0.5) * 40,
+        rotation: Math.random() * 360,
       };
     });
   }
@@ -138,8 +138,8 @@ function generatePositions(
       return {
         x: 50,
         y: 50,
-        size: 20 + Math.random() * 8,
-        rotation: (Math.random() - 0.5) * 20,
+        size: 16 + Math.random() * 14,
+        rotation: Math.random() * 360,
       };
     }
     const angle = baseAngle + ((i - 1) / (total - 1)) * Math.PI * 2;
@@ -147,8 +147,8 @@ function generatePositions(
     return {
       x: 50 + Math.cos(angle) * radius,
       y: 50 + Math.sin(angle) * radius,
-      size: 16 + Math.random() * 7,
-      rotation: (Math.random() - 0.5) * 30,
+      size: 12 + Math.random() * 12,
+      rotation: Math.random() * 360,
     };
   });
 }
